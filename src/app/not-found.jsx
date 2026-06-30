@@ -1,7 +1,7 @@
 "use client"
 import React from 'react';
 
-const NotFoundPage = () => {
+const NotFound = () => {
     return (
         <div>
             
@@ -9,4 +9,4 @@ const NotFoundPage = () => {
     );
 };
 
-export default NotFoundPage;
+export default NotFound;
