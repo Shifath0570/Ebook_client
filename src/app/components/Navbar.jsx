@@ -110,10 +110,7 @@ const Navbar = () => {
                                     <Dropdown.Menu aria-label="User actions profile menu">
                                         <Dropdown.Item id="profile-info" textValue="Signed In Profile" className="h-14 gap-2 opacity-100 pointer-events-none">
                                             <p className="font-semibold text-xs text-default-400">Signed in as</p>
-                                            <p className="font-semibold text-sm text-default-800 truncate">{user.email}</p>
-                                        </Dropdown.Item>
-                                        <Dropdown.Item id="user-dashboard" textValue="Dashboard">
-                                            <Link href="/dashboard" className="w-full block">Dashboard</Link>
+                                            <p className="font-semibold text-sm text-default-800 truncate">{user.name}</p>
                                         </Dropdown.Item>
                                         <Dropdown.Item id="logout" textValue="Log Out" className="text-danger" onClick={handleSignOut}>
                                             Log Out
