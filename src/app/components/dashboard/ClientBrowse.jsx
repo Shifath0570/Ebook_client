@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, Button, TextField, Select, ListBox } from "@heroui/react";
+import { Input, SelectItem, CardBody } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
@@ -39,7 +40,7 @@ export default function ClientBrowse({ initialBooks = [] }) {
             <Card className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 p-4 rounded-2xl">
                 <Card.Content className="p-0 grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
 
-                    {/* Text Input Search */}
+
                     <div className="md:col-span-5">
                         <TextField className="w-full">
                             <input
@@ -52,8 +53,8 @@ export default function ClientBrowse({ initialBooks = [] }) {
                         </TextField>
                     </div>
 
-                    {/* Genre Selection Item */}
-                    <div className="md:col-span-3">
+
+                    <div className="md:col-span-2">
                         <Select
                             value={activeGenre || null}
                             onChange={(val) => updateQueryParam("genre", val)}
@@ -74,7 +75,6 @@ export default function ClientBrowse({ initialBooks = [] }) {
                         </Select>
                     </div>
 
-                    {/* Sort Selection Menu */}
                     <div className="md:col-span-2">
                         <Select
                             value={activeSort || null}
@@ -94,7 +94,7 @@ export default function ClientBrowse({ initialBooks = [] }) {
                         </Select>
                     </div>
 
-                    {/* Action Reset Widgets */}
+
                     <div className="md:col-span-2">
                         <Button onClick={clearFilters} className="w-full bg-slate-800 hover:bg-slate-700 font-medium text-slate-300 text-xs h-[38px] rounded-xl transition-all">
                             Reset Filters
@@ -103,6 +103,8 @@ export default function ClientBrowse({ initialBooks = [] }) {
 
                 </Card.Content>
             </Card>
+
+
 
             {/* GALLERY GRID VIEW DISPLAY LOGIC ENGINE */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -185,3 +187,5 @@ export default function ClientBrowse({ initialBooks = [] }) {
         </div>
     );
 }
+
+
