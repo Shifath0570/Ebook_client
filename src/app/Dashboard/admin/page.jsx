@@ -1,168 +1,270 @@
-"use client"
-import React, { useState } from 'react';
-import { Card, Button } from '@heroui/react';
-import { motion } from 'framer-motion';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend 
-} from 'recharts';
 
-const INITIAL_METRICS = {
-  totalUsers: 124500,
-  totalWriters: 8200,
-  totalEbooksSold: 45320,
-  totalRevenue: 679800,
-};
+"use client";
 
-const monthlySalesData = [
-  { month: 'Jan', sales: 4200 },
-  { month: 'Feb', sales: 5100 },
-  { month: 'Mar', sales: 6800 },
-  { month: 'Apr', sales: 7200 },
-  { month: 'May', sales: 10400 },
-  { month: 'Jun', sales: 11620 },
-];
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Button,
+  Chip,
+  ProgressBar,
+  Spinner,
+} from "@heroui/react";
 
-const genreData = [
-  { name: 'Sci-Fi / Fantasy', value: 18128 },
-  { name: 'Mystery / Thriller', value: 11330 },
-  { name: 'Romance', value: 9064 },
-  { name: 'Non-Fiction', value: 6798 },
-];
+export default function AIAnalyticsDashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-const COLORS = ['#6366f1', '#a855f7', '#f59e0b', '#10b981'];
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/analytics/ai");
+      const result = await res.json();
+      if (result.success) {
+        setData(result);
+      } else {
+        setError(result.error || "Something went wrong.");
+      }
+    } catch (err) {
+      setError("Failed to fetch analytics.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const AdminHomePage = () => {
-  const [metrics, setMetrics] = useState(INITIAL_METRICS);
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
 
-  const cardConfig = [
-    { title: 'Total Users', value: metrics.totalUsers.toLocaleString(), color: 'text-blue-400', change: '+12%' },
-    { title: 'Total Writers', value: metrics.totalWriters.toLocaleString(), color: 'text-purple-400', change: '+5%' },
-    { title: 'Total eBooks Sold', value: metrics.totalEbooksSold.toLocaleString(), color: 'text-amber-400', change: '+18%' },
-    { title: 'Total Revenue', value: `$${metrics.totalRevenue.toLocaleString()}`, color: 'text-emerald-400', change: '+22%' },
-  ];
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <Spinner size="lg" color="primary" />
+        <p className="text-gray-500 text-sm animate-pulse">
+          Analyzing platform activity & generating AI insights...
+        </p>
+      </div>
+    );
+  }
 
-  const handleRefresh = async () => {
-    console.log('Syncing data framework...');
+  if (error || !data) {
+    return (
+      <Card className="max-w-md mx-auto my-8 border border-danger">
+        <CardContent className="text-center p-6">
+          <p className="text-danger font-semibold mb-4">
+            {error || "Failed to load analytics data."}
+          </p>
+          <Button color="primary" variant="flat" onPress={fetchAnalytics}>
+            Retry Analysis
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const { rawMetrics, aiInsights } = data;
+  const topGenres = rawMetrics?.publishingStats?.topGenres || [];
+  const totalEbooks = rawMetrics?.publishingStats?.totalEbooks || 1;
+
+  const getChipColor = (type) => {
+    switch (type) {
+      case "positive": return "success";
+      case "warning": return "warning";
+      case "danger": return "danger";
+      default: return "default";
+    }
   };
 
   return (
-    <div className="w-full min-h-screen bg-zinc-950 p-6 text-zinc-50 sm:p-10">
-      <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <div className="space-y-6 max-w-7xl mx-auto p-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fable Admin Console</h1>
-          <p className="text-zinc-400">Real-time platform telemetry overview and commercial metrics.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Fable AI Platform Intelligence
+          </h1>
+          <p className="text-small text-default-500">
+            Real-time automated analytics powered by Gemini.
+          </p>
         </div>
-        <Button onClick={handleRefresh} color="primary" variant="solid" className="font-medium">
-          Refresh Analytics
+        <Button
+          color="primary"
+          variant="shadow"
+          onPress={fetchAnalytics}
+          isLoading={loading}
+        >
+          Refresh AI Report
         </Button>
-      </header>
-
-      {/* Analytics Summary Cards Row */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {cardConfig.map((card, index) => (
-          <motion.div
-            key={card.title}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-          >
-            <Card className="border border-zinc-800 bg-zinc-900/40 p-6 backdrop-blur-md">
-              <Card.Header className="flex flex-row items-center justify-between p-0 pb-2">
-                <Card.Title className="text-sm font-medium text-zinc-400">{card.title}</Card.Title>
-                <span className="rounded-full bg-zinc-800/80 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
-                  {card.change}
-                </span>
-              </Card.Header>
-              {/* FIXED: Changed Card.Body to HeroUI v3 specification Card.Content */}
-              <Card.Content className="p-0 pt-4">
-                <span className={`text-3xl font-bold tracking-tight ${card.color}`}>
-                  {card.value}
-                </span>
-                <p className="mt-1 text-xs text-zinc-500">vs historical baseline target</p>
-              </Card.Content>
-            </Card>
-          </motion.div>
-        ))}
       </div>
 
-      {/* Visual Analytics Segment - Charts */}
-      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Monthly Sales Performance Bar Chart */}
-        <motion.div 
-          className="lg:col-span-2"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <Card className="border border-zinc-800 bg-zinc-900/40 p-6 h-[400px]">
-            <Card.Header className="p-0 mb-4 flex flex-col items-start gap-1">
-              <Card.Title className="text-lg font-semibold text-zinc-200">Monthly Sales Velocity</Card.Title>
-              <Card.Description className="text-xs text-zinc-400">Ebook unit volume distribution trajectories</Card.Description>
-            </Card.Header>
-            {/* FIXED: Wrapped custom tracking body inside valid Card.Content layout container */}
-            <Card.Content className="w-full h-full pb-8">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlySalesData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis dataKey="month" stroke="#71717a" fontSize={12} tickLine={false} />
-                  <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                    itemStyle={{ color: '#f4f4f5' }}
-                  />
-                  <Bar dataKey="sales" name="Units Sold" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card.Content>
-          </Card>
-        </motion.div>
+      {/* Health & Executive Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="p-2 border border-default-100 shadow-sm">
+          <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
+            <p className="text-tiny uppercase font-bold text-default-400">
+              Platform Health Score
+            </p>
+            <h4 className="font-bold text-3xl mt-1 text-primary">
+              {aiInsights?.healthScore} / 100
+            </h4>
+          </CardHeader>
+          <CardContent className="overflow-visible py-2">
+            <ProgressBar
+              aria-label="Platform Health Score"
+              size="md"
+              value={aiInsights?.healthScore || 0}
+              color={aiInsights?.healthScore > 80 ? "success" : "warning"}
+              className="mt-2"
+            />
+            <p className="text-xs text-default-400 mt-4">
+              Evaluated based on reader retention, revenue, and active publishing output.
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Ebooks By Genre Distribution Pie Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-        >
-          <Card className="border border-zinc-800 bg-zinc-900/40 p-6 h-[400px]">
-            <Card.Header className="p-0 mb-2 flex flex-col items-start gap-1">
-              <Card.Title className="text-lg font-semibold text-zinc-200">Market Shares by Genre</Card.Title>
-              <Card.Description className="text-xs text-zinc-400">Total volume categorical categorization</Card.Description>
-            </Card.Header>
-            {/* FIXED: Wrapped chart viewport inside Card.Content container block layout split */}
-            <Card.Content className="w-full h-full flex items-center justify-center pb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={genreData}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={5}
-                    dataKey="value"
+        <Card className="lg:col-span-2 p-2 border border-default-100 shadow-sm">
+          <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
+            <p className="text-tiny uppercase font-bold text-default-400">
+              Executive AI Summary
+            </p>
+          </CardHeader>
+          <CardContent className="py-3">
+            <p className="text-default-700 leading-relaxed text-sm">
+              {aiInsights?.summary}
+            </p>
+            <hr className="my-3 border-default-200" />
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-default-500">
+                Supply/Demand Balance:
+              </span>
+              <Chip size="sm" color="secondary" variant="flat">
+                {aiInsights?.readerWriterBalance?.ratio}
+              </Chip>
+              <Chip size="sm" color="success" variant="dot">
+                {aiInsights?.readerWriterBalance?.status}
+              </Chip>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Highlights & Recommendations */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border border-default-100 shadow-sm">
+          <CardHeader>
+            <h3 className="text-md font-bold">Key Platform Highlights</h3>
+          </CardHeader>
+          <hr className="border-default-200" />
+          <CardContent className="space-y-4">
+            {aiInsights?.highlights?.map((item, index) => (
+              <div
+                key={index}
+                className="p-3 rounded-lg bg-default-50 flex flex-col gap-1"
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-sm text-foreground">
+                    {item.title}
+                  </span>
+                  <Chip
+                    size="sm"
+                    color={getChipColor(item.type)}
+                    variant="flat"
                   >
-                    {genreData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                    itemStyle={{ color: '#f4f4f5' }}
-                  />
-                  <Legend 
-                    verticalAlign="bottom" 
-                    iconType="circle" 
-                    wrapperStyle={{ fontSize: '12px', color: '#a1a1aa' }} 
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card.Content>
-          </Card>
-        </motion.div>
+                    {item.type}
+                  </Chip>
+                </div>
+                <p className="text-xs text-default-600">{item.description}</p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="border border-default-100 shadow-sm">
+          <CardHeader>
+            <h3 className="text-md font-bold">Recommended Admin Actions</h3>
+          </CardHeader>
+          <hr className="border-default-200" />
+          <CardContent className="space-y-4">
+            {aiInsights?.actionableRecommendations?.map((rec, index) => (
+              <div
+                key={index}
+                className="p-3 rounded-lg border border-default-200 flex items-start justify-between gap-3"
+              >
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-foreground">
+                    {rec.action}
+                  </p>
+                  <span className="text-[10px] text-default-400">
+                    Target Role: <strong>{rec.targetRole}</strong>
+                  </span>
+                </div>
+                <Chip
+                  size="sm"
+                  color={rec.impact === "High" ? "danger" : "primary"}
+                  variant="solid"
+                >
+                  {rec.impact} Impact
+                </Chip>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Metrics Table */}
+      <Card className="border border-default-100 shadow-sm">
+        <CardHeader>
+          <h3 className="text-md font-bold">Platform Metrics Snapshot</h3>
+        </CardHeader>
+        <hr className="border-default-200" />
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-default-200 text-xs uppercase text-default-500 font-semibold">
+                <th className="pb-3 pt-1 px-2">Genre</th>
+                <th className="pb-3 pt-1 px-2">Total Ebooks</th>
+                <th className="pb-3 pt-1 px-2">Popularity Share</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-default-100">
+              {topGenres.map((genreItem, idx) => {
+                const percent = Math.round((genreItem.count / totalEbooks) * 100);
+                return (
+                  <tr key={idx} className="hover:bg-default-50/50">
+                    <td className="py-3 px-2 font-medium text-foreground">
+                      {genreItem.genre}
+                    </td>
+                    <td className="py-3 px-2 text-default-600">
+                      {genreItem.count}
+                    </td>
+                    <td className="py-3 px-2">
+                      <div className="flex items-center gap-3">
+                        <ProgressBar
+                          size="sm"
+                          value={percent}
+                          color="accent"
+                          className="max-w-md"
+                        />
+                        <span className="text-xs text-default-500">
+                          {percent}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
   );
-};
+}
 
-export default AdminHomePage;
+
+
+
+

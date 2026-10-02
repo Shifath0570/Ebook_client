@@ -27,7 +27,8 @@ const DashboardSidebar = () => {
         { id: "purchase-history", href: "/Dashboard/reader/purchaseHistory", label: "Purchase History", icon: <Clock className="w-5 h-5" /> },
         { id: "purchased-ebooks", href: "/Dashboard/reader/purchasedEbooks", label: "Purchased Ebooks", icon: <BookOpen className="w-5 h-5" /> },
         { id: "profile", href: "/Dashboard/reader/profile", label: "Profile Management", icon: <Person className="w-5 h-5" /> },
-        { id: "bookmarks", href: "/Dashboard/reader/bookMark", label: "Bookmark Page", icon: <Bookmark className="w-5 h-5" /> },
+        { id: "bookmarks", href: "/Dashboard/reader/bookMark", label: "Bookmark", icon: <Bookmark className="w-5 h-5" /> },
+        { id: "ChatWithBookDrawer", href: "/Dashboard/reader/ChatWithBookDrawer", label: "ChatWithBookDrawer", icon: <Bookmark className="w-5 h-5" /> },
     ];
 
     const adminNavItems = [
